@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/space"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/logoblack" />
+    <TextView
+        android:id="@+id/space1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/purple"
+        android:textStyle="bold"
+        android:text="Select mode"/>
+
+    <TextView
+        android:id="@+id/space3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/OD"
+        android:layout_width="310dp"
+        android:layout_height="194dp"
+        android:layout_gravity="center"
+        android:background="@drawable/shapes"
+        android:text="Swipe Up for Object Detection" />
+
+    <TextView
+        android:id="@+id/space4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/TD"
+        android:layout_width="317dp"
+        android:layout_height="194dp"
+        android:layout_gravity="center"
+        android:background="@drawable/shapes"
+        android:text="Swipe down for Text Scanner" />
+
+
+</LinearLayout>
