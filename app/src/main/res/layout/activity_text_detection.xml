@@ -6,11 +6,26 @@
     android:orientation="vertical"
     tools:context=".ObjectDetection">
 
-    <ImageView
-        android:id="@+id/imgView"
+    <SurfaceView
+        android:id="@+id/surface_camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+
+    <ImageView
+        android:layout_width="500px"
+        android:layout_height="300px"
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/transparent"
+        android:src="@drawable/logowhite" />
+
+    <TextView
+        android:id="@+id/tv_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="400dp"
+        android:text=""
+        android:layout_gravity="center_horizontal"/>
 
 
 </FrameLayout>
