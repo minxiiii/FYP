@@ -3,6 +3,7 @@ package com.example.splashscreen
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -17,14 +18,18 @@ import android.speech.tts.TextToSpeech
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
+import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.example.splashscreen.ml.SsdMobilenetV11Metadata1
 import org.tensorflow.lite.support.common.FileUtil
@@ -48,28 +53,22 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
     lateinit var tts: TextToSpeech
     private var isDetectionComplete = false
     private lateinit var gestureDetector: GestureDetector
+    private var previousPopup: View? = null
     var y1: Float = 0.0f
     var y2: Float = 0.0f
-
-
     companion object{
         const val MIN_DIST = 50
     }
-
-
-
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar()?.hide();
+        // this references maindetection.xml
         setContentView(R.layout.maindetection)
         get_permission()
         gestureDetector = GestureDetector(this, this)
-
-
-
         labels = FileUtil.loadLabels(this, "labels.txt")
         imageProcessor = ImageProcessor.Builder().add(ResizeOp(300, 300, ResizeOp.ResizeMethod.BILINEAR)).build()
         model = SsdMobilenetV11Metadata1.newInstance(this)
@@ -101,101 +100,77 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
                 val classes = outputs.classesAsTensorBuffer.floatArray
                 val maxScoreIndex = outputs.scoresAsTensorBuffer.floatArray.indices.maxByOrNull { outputs.scoresAsTensorBuffer.floatArray[it] } ?: -1
 
-
                 var mutable = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-
-
 
                 val objectName = findViewById<TextView>(R.id.objectNameObj)
                 if (!isDetectionComplete) {
                     val index = maxScoreIndex //take the object that has the highest scoring detection
                     // Draw bounding boxes and labels
                     objectName.text = labels[classes[index].toInt()]
-                    objectName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f)
-                    objectName.setTextColor(Color.BLUE)
-
-
+//                    objectName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40f)
+//                    objectName.setTextColor(Color.BLUE)
                     tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
                         if (status != TextToSpeech.ERROR) {
                             // Choose language
                             tts.language = Locale.ENGLISH
                             var label = labels.get(classes.get(index).toInt())
                             tts.speak(label ,TextToSpeech.QUEUE_ADD, null)
-                            showDialog()
-
-
+                            // NEED TO UPDATE HERE***
+//                            showDialog()
+                            showObjectText(objectName.text.toString().capitalizeFirstLetter());
                         }
-
                     })
                     isDetectionComplete = true
 
                 }
-
-
                 imageView.setImageBitmap(mutable)
                 //storing captured frames
-
-
             }
         }
 
         cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
 
     }
-
-
-
-
-
-    private fun showDialog() {
-        val dialog = Dialog(this, R.style.DialogTheme)
-        dialog.setContentView(R.layout.popup)
-
-        val dialogScan = dialog.findViewById<TextView>(R.id.dialogScanAgain)
-        dialogScan.text = "Swipe down to scan again"
-        dialogScan.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-        dialogScan.setTextColor(Color.RED)
-
-
-
-
-        val dialogTextView = dialog.findViewById<TextView>(R.id.dialogTextView)
-        dialogTextView.text = "Swipe Up for text detection"
-        dialogTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-        dialogTextView.setTextColor(Color.RED)
-
-
-
-
-
-        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
-            if (status != TextToSpeech.ERROR) {
-                // Choose language
-                tts.language = Locale.ENGLISH
-                tts.speak(dialogTextView.text.toString(), TextToSpeech.QUEUE_ADD, null)
-                tts.speak(dialogScan.text.toString(), TextToSpeech.QUEUE_ADD, null)
-            }
-        })
-
-
-        dialog.window?.apply {
-            clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND) // main screen not dim when dialog pops up
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.window?.setLayout(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT
-            )
-            dialog.window?.setGravity(Gravity.CENTER)
+    // ben
+    fun showObjectText(text: String) {
+        // If there is a previous popup, remove it from the layout
+        if (previousPopup != null) {
+            (previousPopup?.parent as? ViewGroup)?.removeView(previousPopup)
         }
-        dialog.show()
 
+        // Create a new popup view
+        val inflater = LayoutInflater.from(this)
+        val overlayView = inflater.inflate(R.layout.fixed_popup, null) as ConstraintLayout
+        val tvDisplayText = overlayView.findViewById<TextView>(R.id.tvDisplayObject)
+
+        // Set the text to the TextView in the overlay layout
+        tvDisplayText.text = text
+
+        // Add the overlayView to the Main Activity's layout
+        addContentView(
+            overlayView,
+            ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.MATCH_PARENT,
+                ConstraintLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        // Store the reference to the newly displayed popup
+        previousPopup = overlayView
+    }
+    // ben
+    fun String.capitalizeFirstLetter(): String {
+        return if (isNotEmpty()) {
+            this[0].uppercase() + substring(1)
+        } else {
+            this
+        }
     }
 
 
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.action){
-
             MotionEvent.ACTION_DOWN -> //action down
             {
                 y1 = event.y
@@ -203,20 +178,16 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
 
             MotionEvent.ACTION_UP-> { // action up
                 y2 = event.y
-
-
                 val valueY: Float = y2 - y1
 
                 if (abs(valueY) > MIN_DIST)
                 {
                     if (y2 > y1)
                     {
-                        isDetectionComplete = false
-
-
+                        navigateToTextDetectionActivity(this)
 
                     } else {
-                        openTextDect()
+                        isDetectionComplete = false
                     }
                 }
 
@@ -231,11 +202,6 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
         super.onDestroy()
         model.close()
     }
-
-
-
-
-
     @SuppressLint("MissingPermission")
     fun open_camera(){
         cameraManager.openCamera(cameraManager.cameraIdList[0], object:CameraDevice.StateCallback(){
@@ -312,11 +278,12 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
         return false
     }
 
-    fun openTextDect() {
-        val intent = Intent(this, TextDetection::class.java)
-        startActivity(intent)
+//    fun openTextDect() {
+//        val intent = Intent(this, TextDetection::class.java)
+//        startActivity(intent)
+//    }
+    fun navigateToTextDetectionActivity(context: Context) {
+        val intent = Intent(context, TextDetection::class.java)
+        context.startActivity(intent)
     }
-
-
-
 }

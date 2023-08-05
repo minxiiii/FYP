@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Button;
+import android.widget.TextView;
 
 
 import java.util.Locale;
@@ -21,8 +22,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private static int MIN_DISTANCE = 100;
     private float x1,x2,y1,y2;
     private GestureDetector gestureDetector;
-    Button OD;
-    Button TD;
+    TextView OD, TD;
     TextToSpeech tts;
 
     @Override

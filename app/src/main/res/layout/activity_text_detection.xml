@@ -23,9 +23,10 @@
         android:id="@+id/tv_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="400dp"
-        android:text=""
-        android:layout_gravity="center_horizontal"/>
+        android:alpha="0"
+        android:text="" />
 
 
 </FrameLayout>

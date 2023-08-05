@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SplashScreen</string>
+    <string name="swipe_up">Swipe up to continue scanning</string>
+    <string name="swipe_down">Swipe down to switch mode</string>
+    <string name="swipe_up_2">Swipe up to switch mode</string>
+    <string name="swipe_down_2">Swipe down to continue scanning</string>
+    <string name="mode_select">Select Mode</string>
+    <string name="object_detection">Swipe up for Object Detection</string>
 </resources>
