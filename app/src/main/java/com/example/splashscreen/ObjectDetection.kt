@@ -2,22 +2,19 @@ package com.example.splashscreen
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.graphics.drawable.ColorDrawable
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.speech.tts.TextToSpeech
-import android.util.TypedValue
 import android.view.GestureDetector
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -56,6 +53,8 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
     private var previousPopup: View? = null
     var y1: Float = 0.0f
     var y2: Float = 0.0f
+    var x1: Float = 0.0f
+    var x2: Float = 0.0f
     companion object{
         const val MIN_DIST = 50
     }
@@ -74,6 +73,14 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
         model = SsdMobilenetV11Metadata1.newInstance(this)
         val handlerThread = HandlerThread("videoThread")
         handlerThread.start()
+        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+            if (status != TextToSpeech.ERROR) {
+                // Choose language
+                tts.language = Locale.ENGLISH
+                tts.setSpeechRate(1.5f)
+                tts.speak("Object detection mode, swipe up to scan",TextToSpeech.QUEUE_FLUSH, null);
+            }
+        })
         handler = Handler(handlerThread.looper)
 
         imageView = findViewById(R.id.imageViewObj)
@@ -89,7 +96,6 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
             override fun onSurfaceTextureDestroyed(p0: SurfaceTexture): Boolean {
                 return false
             }
-
 
             override fun onSurfaceTextureUpdated(p0: SurfaceTexture) {
                 bitmap = textureView.bitmap!!
@@ -113,8 +119,9 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
                         if (status != TextToSpeech.ERROR) {
                             // Choose language
                             tts.language = Locale.ENGLISH
+                            tts.setSpeechRate(1.3f)
                             var label = labels.get(classes.get(index).toInt())
-                            tts.speak(label ,TextToSpeech.QUEUE_ADD, null)
+                            tts.speak(label ,TextToSpeech.QUEUE_FLUSH, null)
                             // NEED TO UPDATE HERE***
 //                            showDialog()
                             showObjectText(objectName.text.toString().capitalizeFirstLetter());
@@ -169,34 +176,75 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
 
 
 
+//    override fun onTouchEvent(event: MotionEvent?): Boolean {
+//        when (event?.action){
+//            MotionEvent.ACTION_DOWN -> //action down
+//            {
+//                y1 = event.y
+//            }
+//
+//            MotionEvent.ACTION_UP-> { // action up
+//                y2 = event.y
+//                val valueY: Float = y2 - y1
+//
+//                if (abs(valueY) > MIN_DIST)
+//                {
+//                    if (y2 > y1)
+//                    {
+//                        navigateToTextDetectionActivity(this)
+//
+//                    } else {
+//                        isDetectionComplete = false
+//                    }
+//                }
+//
+//            }
+//
+//        }
+//
+//        return super.onTouchEvent(event)
+//    }
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        when (event?.action){
-            MotionEvent.ACTION_DOWN -> //action down
-            {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
                 y1 = event.y
+                x1 = event.x
             }
-
-            MotionEvent.ACTION_UP-> { // action up
+            MotionEvent.ACTION_UP -> {
                 y2 = event.y
+                x2 = event.x
+                val valueX: Float = x2 - x1
                 val valueY: Float = y2 - y1
 
-                if (abs(valueY) > MIN_DIST)
-                {
-                    if (y2 > y1)
-                    {
-                        navigateToTextDetectionActivity(this)
-
+                if (abs(valueX) > MIN_DIST || abs(valueY) > MIN_DIST) {
+                    // Check if the swipe is primarily horizontal (left or right)
+                    if (abs(valueX) > abs(valueY)) {
+                        if (valueX > 0) {
+                            // Right swipe
+                            // Add your right swipe handling code here
+                            callHelp(this)
+                        } else {
+                            // Left swipe
+                            // Add your left swipe handling code here
+                        }
                     } else {
-                        isDetectionComplete = false
+                        // Check if the swipe is primarily vertical (up or down)
+                        if (y2 > y1) {
+                            // Down swipe
+                            // Add your down swipe handling code here
+                            navigateToTextDetectionActivity(this)
+                        } else {
+                            // Up swipe
+                            // Add your up swipe handling code here
+                            isDetectionComplete = false
+                        }
                     }
                 }
-
             }
-
         }
-
         return super.onTouchEvent(event)
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -285,5 +333,20 @@ class ObjectDetection : AppCompatActivity(), GestureDetector.OnGestureListener {
     fun navigateToTextDetectionActivity(context: Context) {
         val intent = Intent(context, TextDetection::class.java)
         context.startActivity(intent)
+        if (::tts.isInitialized) {
+            tts.stop()
+        }
+    }
+    fun callHelp(context: Context) {
+        // Create an intent to dial the number
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:122")
+
+        // Check if there's an app to handle the intent (dialer app)
+        if (intent.resolveActivity(context.packageManager) != null) {
+            // Start the dialer activity
+            context.startActivity(intent)
+        } else {
+        }
     }
 }

@@ -5,8 +5,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
@@ -24,6 +26,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.vision.Detector
 import com.google.android.gms.vision.text.TextBlock
+import java.util.Locale
 import kotlin.arrayOf
 
 
@@ -37,6 +40,7 @@ class TextDetection : AppCompatActivity() {
     private var previousPopup: View? = null
     var currentGesture = ""
     private var isTextDetected=true
+    lateinit var tts: TextToSpeech
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +51,15 @@ class TextDetection : AppCompatActivity() {
 
         val surface_camera_preview: SurfaceView = findViewById(R.id.surface_camera_preview)
         val tv_result : TextView = findViewById(R.id.tv_result)
+
+        tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+            if (status != TextToSpeech.ERROR) {
+                // Choose language
+                tts.language = Locale.ENGLISH
+                tts.setSpeechRate(1.5f)
+                tts.speak("Text detection mode, swipe down to scan",TextToSpeech.QUEUE_FLUSH, null);
+            }
+        })
 
         textRecognizer = TextRecognizer.Builder(this).build()
         if (!textRecognizer.isOperational) {
@@ -105,6 +118,13 @@ class TextDetection : AppCompatActivity() {
                     }
                     // this is the part that prints the text
                     tv_result.text = stringBuilder.toString()
+                    tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+                        if (status != TextToSpeech.ERROR) {
+                            // Choose language
+                            tts.language = Locale.ENGLISH
+                            tts.speak(tv_result.text.toString(),TextToSpeech.QUEUE_FLUSH, null);
+                        }
+                    })
                     showObjectText(tv_result.text.toString().capitalizeFirstLetter())
                     isTextDetected=true
                 }
@@ -117,10 +137,21 @@ class TextDetection : AppCompatActivity() {
         // This method will be called when a swipe gesture is detected
         when (gesture) {
             // set boolean flag to false so that text detection can run once
-            'u' -> navigateToObjectDetectionActivity(this)
-            'd' -> isTextDetected=false
+            'u' -> {navigateToObjectDetectionActivity(this)
+                if (::tts.isInitialized) {
+                    tts.stop()
+                    tts.setSpeechRate(1.5f)
+                }
+            }
+            'd' -> {
+                isTextDetected = false
+                if (::tts.isInitialized) {
+                    tts.stop()
+                    tts.setSpeechRate(1.5f)
+                }
+            }
             'l' -> showToast("left")
-            'r' -> showToast("right")
+            'r' -> callHelp(this)
         }
     }
 
@@ -252,6 +283,18 @@ class TextDetection : AppCompatActivity() {
     fun navigateToObjectDetectionActivity(context: Context) {
         val intent = Intent(context, ObjectDetection::class.java)
         context.startActivity(intent)
+    }
+    fun callHelp(context: Context) {
+        // Create an intent to dial the number
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:122")
+
+        // Check if there's an app to handle the intent (dialer app)
+        if (intent.resolveActivity(context.packageManager) != null) {
+            // Start the dialer activity
+            context.startActivity(intent)
+        } else {
+        }
     }
 
 

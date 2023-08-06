@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -40,8 +41,11 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 if (i != tts.ERROR) {
                     // ch0ose language
                     tts.setLanguage(Locale.ENGLISH);
-                    tts.speak(OD.getText().toString(), tts.QUEUE_ADD,null);
-                    tts.speak(TD.getText().toString(), tts.QUEUE_ADD,null);
+                    tts.setSpeechRate(1.5f);
+                    tts.speak("Welcome to Eyegle", tts.QUEUE_ADD,null);
+                    tts.speak("Swipe up for object detection ", tts.QUEUE_ADD,null);
+                    tts.speak("Swipe down for text detection", tts.QUEUE_ADD,null);
+                    tts.speak("Swipe right for emergency call", tts.QUEUE_ADD,null);
                 }
             }
         });
@@ -73,22 +77,52 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
 
                 // value for vertical swipe
+                float valueX = x2 - x1;
                 float valueY = y2 - y1;
 
-                if (Math.abs(valueY) > MIN_DISTANCE) {
+//                if (Math.abs(valueY) > MIN_DISTANCE) {
+//
+//                    //detect top to bottom swipe
+//                    if (y2 >y1)
+//                    {
+//                        Log.d(TAG, "Bottom Swipe");
+////                        tts.speak("Text detection mode",tts.QUEUE_ADD, null);
+//                        openTextDect();
+//                    }
+//                    else
+//                    {
+//                        Log.d(TAG, "Top Swipe");
+////                        tts.speak("Object detection mode",tts.QUEUE_ADD, null);
+//                        openObjectDect();
+//                    }
+//                }
+                if (Math.abs(valueX) > MIN_DISTANCE || Math.abs(valueY) > MIN_DISTANCE) {
+                    // Check for swipe direction
+                    if (Math.abs(valueX) > Math.abs(valueY)) {
+                        // Horizontal swipe
+                        if (valueX > 0) {
+                            Log.d(TAG, "Right Swipe");
+                            // Implement action for right swipe
+                            callHelp();
 
-                    //detect top to bottom swipe
-                    if (y2 >y1)
-                    {
-                        Log.d(TAG, "Bottom Swipe");
-                        openTextDect();
-                    }
-                    else
-                    {
-                        Log.d(TAG, "Top Swipe");
-                        openObjectDect();
+                        } else {
+                            Log.d(TAG, "Left Swipe");
+                            // Implement action for left swipe
+                        }
+                    } else {
+                        // Vertical swipe
+                        if (valueY > 0) {
+                            Log.d(TAG, "Bottom Swipe");
+                            // Implement action for bottom swipe
+                            openTextDect();
+                        } else {
+                            Log.d(TAG, "Top Swipe");
+                            // Implement action for top swipe
+                            openObjectDect();
+                        }
                     }
                 }
+                break;
 
         }
 
@@ -127,11 +161,37 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
     public void openTextDect() {
         Intent intent = new Intent(this, TextDetection.class);
+        if (tts != null) {
+//            tts.speak("Text detection mode",tts.QUEUE_ADD, null);
+            tts.stop();
+        }
         startActivity(intent);
     }
 
     public void openObjectDect() {
         Intent intent = new Intent(this, ObjectDetection.class);
+        if (tts != null) {
+//            tts.speak("Object detection mode",tts.QUEUE_ADD, null);
+            tts.stop();
+        }
         startActivity(intent);
+    }
+    private void callHelp() {
+        String phoneNumber = "122";
+
+        // Create the intent with ACTION_DIAL action and the phone number URI
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:" + phoneNumber));
+
+        // Check if there is an activity to handle the intent
+        if (callIntent.resolveActivity(getPackageManager()) != null) {
+            // Start the intent if there is an activity available
+            startActivity(callIntent);
+        } else {
+            // Handle the case where there is no activity to handle the intent (e.g., no dialer app)
+            // You can display an error message or take alternative actions.
+            // For simplicity, we'll just print a message here.
+            System.out.println("No dialer app available.");
+        }
     }
 }
