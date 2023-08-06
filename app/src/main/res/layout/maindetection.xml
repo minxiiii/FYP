@@ -30,7 +30,7 @@
         android:layout_width="500px"
         android:layout_height="300px"
         android:layout_gravity="center_horizontal"
-        android:alpha="0.7"
+        android:alpha="0.6"
         android:background="@android:color/transparent"
         android:src="@drawable/logowhite" />
 

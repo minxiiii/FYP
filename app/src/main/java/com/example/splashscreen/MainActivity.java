@@ -56,8 +56,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     }
 
     //override on touch event
-
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -69,33 +67,13 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 x1 = event.getX();
                 y1 = event.getY();
                 break;
-
                 //ending time swipe gesture
             case MotionEvent.ACTION_UP:
                 x2 = event.getX();
                 y2 = event.getY();
-
-
                 // value for vertical swipe
                 float valueX = x2 - x1;
                 float valueY = y2 - y1;
-
-//                if (Math.abs(valueY) > MIN_DISTANCE) {
-//
-//                    //detect top to bottom swipe
-//                    if (y2 >y1)
-//                    {
-//                        Log.d(TAG, "Bottom Swipe");
-////                        tts.speak("Text detection mode",tts.QUEUE_ADD, null);
-//                        openTextDect();
-//                    }
-//                    else
-//                    {
-//                        Log.d(TAG, "Top Swipe");
-////                        tts.speak("Object detection mode",tts.QUEUE_ADD, null);
-//                        openObjectDect();
-//                    }
-//                }
                 if (Math.abs(valueX) > MIN_DISTANCE || Math.abs(valueY) > MIN_DISTANCE) {
                     // Check for swipe direction
                     if (Math.abs(valueX) > Math.abs(valueY)) {
@@ -128,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
         return super.onTouchEvent(event);
     }
-
     @Override
     public boolean onDown(@NonNull MotionEvent motionEvent) {
         return false;
@@ -136,9 +113,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
     @Override
     public void onShowPress(@NonNull MotionEvent motionEvent) {
-
     }
-
     @Override
     public boolean onSingleTapUp(@NonNull MotionEvent motionEvent) {
         return false;
@@ -148,50 +123,44 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     public boolean onScroll(@NonNull MotionEvent motionEvent, @NonNull MotionEvent motionEvent1, float v, float v1) {
         return false;
     }
-
     @Override
     public void onLongPress(@NonNull MotionEvent motionEvent) {
 
     }
-
     @Override
     public boolean onFling(@NonNull MotionEvent motionEvent, @NonNull MotionEvent motionEvent1, float v, float v1) {
         return false;
     }
-
+    // this function is used to go to TextDetection.kt
     public void openTextDect() {
         Intent intent = new Intent(this, TextDetection.class);
         if (tts != null) {
-//            tts.speak("Text detection mode",tts.QUEUE_ADD, null);
             tts.stop();
         }
         startActivity(intent);
     }
 
+     // this function is used to go to ObjectDetection.kt
     public void openObjectDect() {
         Intent intent = new Intent(this, ObjectDetection.class);
         if (tts != null) {
-//            tts.speak("Object detection mode",tts.QUEUE_ADD, null);
             tts.stop();
         }
         startActivity(intent);
     }
+    // this function is used to go to call emergency services
     private void callHelp() {
         String phoneNumber = "122";
 
-        // Create the intent with ACTION_DIAL action and the phone number URI
+        // create the intent with ACTION_DIAL action and the phone number URI
         Intent callIntent = new Intent(Intent.ACTION_DIAL);
         callIntent.setData(Uri.parse("tel:" + phoneNumber));
 
-        // Check if there is an activity to handle the intent
+        // check if there is an activity to handle the intent
         if (callIntent.resolveActivity(getPackageManager()) != null) {
-            // Start the intent if there is an activity available
+            // start the intent if there is an activity available
             startActivity(callIntent);
         } else {
-            // Handle the case where there is no activity to handle the intent (e.g., no dialer app)
-            // You can display an error message or take alternative actions.
-            // For simplicity, we'll just print a message here.
-            System.out.println("No dialer app available.");
         }
     }
 }

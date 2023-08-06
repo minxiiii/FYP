@@ -45,7 +45,7 @@ class TextDetection : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_text_detection)
-        // Initialize the GestureDetector
+        // initialize the GestureDetector
         gestureDetector = GestureDetector(this, MyGestureListener())
         requestForPermission()
 
@@ -54,7 +54,6 @@ class TextDetection : AppCompatActivity() {
 
         tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
             if (status != TextToSpeech.ERROR) {
-                // Choose language
                 tts.language = Locale.ENGLISH
                 tts.setSpeechRate(1.5f)
                 tts.speak("Text detection mode, swipe down to scan",TextToSpeech.QUEUE_FLUSH, null);
@@ -68,7 +67,7 @@ class TextDetection : AppCompatActivity() {
             Log.e(tag, "Dependencies are downloading....try after few moments")
             return
         }
-        // Init camera source to use high resolution and auto focus
+        // init camera source to use high resolution and auto focus
         mCameraSource = CameraSource.Builder(applicationContext, textRecognizer)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
             .setRequestedPreviewSize(1280, 1024)
@@ -94,9 +93,7 @@ class TextDetection : AppCompatActivity() {
             }
 
             override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-
             }
-
         }
         )
         textRecognizer.setProcessor(object : Detector.Processor<TextBlock> {
@@ -108,7 +105,6 @@ class TextDetection : AppCompatActivity() {
                 if (items.size() <= 0 || isTextDetected) {
                     return
                 }
-
                 tv_result.post {
                     val stringBuilder = StringBuilder()
                     for (i in 0 until items.size()) {
@@ -120,7 +116,6 @@ class TextDetection : AppCompatActivity() {
                     tv_result.text = stringBuilder.toString()
                     tts = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
                         if (status != TextToSpeech.ERROR) {
-                            // Choose language
                             tts.language = Locale.ENGLISH
                             tts.speak(tv_result.text.toString(),TextToSpeech.QUEUE_FLUSH, null);
                         }
@@ -132,7 +127,6 @@ class TextDetection : AppCompatActivity() {
         })
 
     }
-    // ben
     private fun gestureDetected(gesture: Char) {
         // This method will be called when a swipe gesture is detected
         when (gesture) {
@@ -159,20 +153,18 @@ class TextDetection : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
     fun showObjectText(text: String) {
-        // If there is a previous popup, remove it from the layout
+        // if there is a previous popup, remove it from the layout
         if (previousPopup != null) {
             (previousPopup?.parent as? ViewGroup)?.removeView(previousPopup)
         }
-
-        // Create a new popup view
         val inflater = LayoutInflater.from(this)
         val overlayView = inflater.inflate(R.layout.fixed_popup_text, null) as ConstraintLayout
         val tvDisplayText = overlayView.findViewById<TextView>(R.id.tvDisplayText)
 
-        // Set the text to the TextView in the overlay layout
+        // set the text to the TextView in the overlay layout
         tvDisplayText.text = text
 
-        // Add the overlayView to the Main Activity's layout
+        // add the overlayView to the Main Activity's layout
         addContentView(
             overlayView,
             ConstraintLayout.LayoutParams(
@@ -180,11 +172,9 @@ class TextDetection : AppCompatActivity() {
                 ConstraintLayout.LayoutParams.MATCH_PARENT
             )
         )
-
-        // Store the reference to the newly displayed popup
+        // store the reference to the newly displayed popup
         previousPopup = overlayView
     }
-    // ben
     fun String.capitalizeFirstLetter(): String {
         return if (isNotEmpty()) {
             this[0].uppercase() + substring(1)
@@ -242,11 +232,10 @@ class TextDetection : AppCompatActivity() {
             }
         }
     }
-    // GESTURE DETECTOR FUNCTIONS
+    // GESTURE DETECTOR FUNCTIONS DON'T REMOVE THIS PLS :)
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event)
     }
-
     private inner class MyGestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onFling(
             e1: MotionEvent,
@@ -256,23 +245,21 @@ class TextDetection : AppCompatActivity() {
         ): Boolean {
             val diffX = e2.x - e1.x
             val diffY = e2.y - e1.y
-
             val horizontalSwipe = Math.abs(diffX) > Math.abs(diffY)
-
             if (horizontalSwipe) {
                 if (diffX > 0) {
-                    // Right swipe
+                    // right swipe
                     gestureDetected('r')
                 } else {
-                    // Left swipe
+                    // left swipe
                     gestureDetected('l')
                 }
             } else {
                 if (diffY > 0) {
-                    // Down swipe
+                    // down swipe
                     gestureDetected('d')
                 } else {
-                    // Up swipe
+                    // up swipe
                     gestureDetected('u')
                 }
             }
@@ -285,13 +272,13 @@ class TextDetection : AppCompatActivity() {
         context.startActivity(intent)
     }
     fun callHelp(context: Context) {
-        // Create an intent to dial the number
+        // create an intent to dial the number
         val intent = Intent(Intent.ACTION_DIAL)
         intent.data = Uri.parse("tel:122")
 
-        // Check if there's an app to handle the intent (dialer app)
+        // check if there's an app to handle the intent (dialer app)
         if (intent.resolveActivity(context.packageManager) != null) {
-            // Start the dialer activity
+            // start the dialer activity
             context.startActivity(intent)
         } else {
         }
